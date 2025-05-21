@@ -152,11 +152,6 @@
   (ok (is-user-registered user))
 )
 
-;; Get a user's registered devices
-(define-read-only (get-user-devices (user principal))
-  (ok (map-get? user-devices { user: user }))
-)
-
 ;; Check if a consumer is verified
 (define-read-only (check-consumer-verification (consumer principal))
   (ok (is-consumer-verified consumer))
@@ -279,24 +274,5 @@
     )
     
     (ok true)
-  )
-)
-
-;; Request access to user data (called by consumers)
-(define-public (request-data-access 
-  (user principal) 
-  (data-type (string-ascii 64))
-  (purpose (string-ascii 128)))
-  (let ((sender tx-sender))
-    (asserts! (is-user-registered user) (err err-user-does-not-exist))
-    (asserts! (is-consumer-verified sender) (err err-consumer-not-verified))
-    (asserts! (is-valid-data-type data-type) (err err-invalid-data-type))
-    (asserts! (has-access user sender data-type) (err err-access-not-granted))
-    
-    ;; Record the access attempt for audit
-    (match (record-access user sender data-type purpose)
-      access-id (ok access-id)
-      err-value (err err-value)
-    )
   )
 )
